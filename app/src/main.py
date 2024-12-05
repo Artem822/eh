@@ -4,13 +4,21 @@ from menu import name
 def main(page: ft.Page):
 
     def test(e):
-        if login_entery.value != 'admin' or password_entery.value != 'admin':
+        if login_entery.value != '1' or password_entery.value != '1':
             error_text.value = 'Введены не корректные данные'
             login_entery.border_color = ft.colors.RED
             password_entery.border_color = ft.colors.RED
             page.update()
         else:
-            name(page)
+            page.clean()
+            page.title = ':)'
+            page.window.width = 195
+            page.window.height = 200
+            username = ft.Text('Здравствуйте: admin', weight='bold')
+            history_button = ft.ElevatedButton('Просмотреть отчеты')
+            tests_button = ft.ElevatedButton('Тестирование')
+            statistics_button = ft.ElevatedButton('Статистика')
+            page.add(ft.Column([username,history_button,tests_button,statistics_button], alignment=ft.MainAxisAlignment.CENTER,horizontal_alignment=ft.CrossAxisAlignment.CENTER))
 
 
     page.title = 'Вход в аккаунт'
