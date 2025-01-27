@@ -54,6 +54,7 @@ class CalendarVacation(models.Model):
 
 class CalendarEducation(models.Model):
     event_id = models.ForeignKey("Event", on_delete=models.CASCADE, related_name="event")
+    employees = models.ManyToManyField("Employee", related_name="calendar_education_employees")
 
 class EducationType(models.Model):
     title = models.CharField(max_length=255)

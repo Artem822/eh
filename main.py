@@ -1,11 +1,13 @@
 from PySide6 import QtWidgets
 import sys
 from MainWindow import Ui_MainWindow
-from sqlalchemy import  MetaData, Table, select
+from sqlalchemy import  MetaData, Table, select, update, delete
 from alchemy import Session, engine
 from AddUser import Ui_Dialog_add
 from datetime import datetime
 from SeeInfo import Ui_Dialog_SeeInfo
+from sqlalchemy import asc
+import pytz
 
 class SeeInfo(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -13,8 +15,9 @@ class SeeInfo(QtWidgets.QDialog):
         self.ui = Ui_Dialog_SeeInfo()
         self.ui.setupUi(self)
         self.setWindowTitle('Информация о пользователе')
-        self.setFixedSize(463, 702)
         self.ui.pushButton.clicked.connect(self.save)
+        self.ui.pushButton_2.clicked.connect(self.delete)
+        self.ui.comboBox.currentIndexChanged.connect(self.pupu)
         with Session() as session:
             metadata = MetaData()
             self.employee_table = Table('models_employee', metadata, autoload_with=engine)
@@ -24,16 +27,87 @@ class SeeInfo(QtWidgets.QDialog):
             self.position_table = Table('models_position', metadata, autoload_with=engine)
             self.positins = session.execute(select(self.position_table)).all()
             self.cabinet_table = Table('models_cabinet', metadata, autoload_with=engine)
+            self.calendarskip_table = Table('models_calendarskip', metadata, autoload_with=engine)
+            self.calendarskip_employees_table = Table('models_calendarskip_employees', metadata, autoload_with=engine)
+            self.calendarvacation_table = Table('models_calendarvacation', metadata, autoload_with=engine)
+            self.calendarvacation_employees_table = Table('models_calendarvacation_employees', metadata, autoload_with=engine)
+            self.calendareducation_table = Table('models_calendareducation', metadata, autoload_with=engine)
+            self.calendareducation_employees_table = Table('models_calendareducation_employees', metadata, autoload_with=engine)
+            self.event_table = Table('models_event', metadata, autoload_with=engine)
+            self.event_type_table = Table('models_eventtype', metadata, autoload_with=engine)
+            
             for i in self.organizations:
                 self.ui.Organization.addItem(i.title)
             for i in self.positins:
                 self.ui.Position.addItem(i.title)
         self.add_info()
-        
+    
+    def delete(self):
+        with Session() as session:
+            session.execute(delete(self.employee_table).where(self.employee_table.c.username==name))
+
+            session.commit()
+            self.close()
+            
+    def pupu(self, data):
+        self.ui.tableWidget_2.setRowCount(0)
+        with Session() as session:
+            employee = session.execute(select(self.employee_table).where(self.employee_table.c.username==str(name))).first()
+            educations = session.execute(select(self.calendareducation_employees_table).where(self.calendareducation_employees_table.c.employee_id==employee.id)).all()
+            for i in educations:
+                education = session.execute(select(self.calendareducation_table).where(self.calendareducation_table.c.id==i.calendareducation_id)).first()
+                event = session.execute(select(self.event_table).where(self.event_table.c.id==education.event_id_id)).first()
+                if data == 1 and event.date_until < pytz.UTC.localize(datetime.now()):
+                    currentRowCount = self.ui.tableWidget_2.rowCount()
+                    self.ui.tableWidget_2.insertRow(currentRowCount)
+                    self.ui.tableWidget_2.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(event.id)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(event.date_since)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(event.date_until)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 3, QtWidgets.QTableWidgetItem(str(event.description)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 4, QtWidgets.QTableWidgetItem(str(event.status)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 5, QtWidgets.QTableWidgetItem(str(event.education_id_id)))
+                    type = session.execute(select(self.event_type_table).where(self.event_type_table.c.id==event.event_type_id_id)).first()
+                    self.ui.tableWidget_2.setItem(currentRowCount, 6, QtWidgets.QTableWidgetItem(str(type.title)))
+                if data == 2 and event.date_since < pytz.UTC.localize(datetime.now()) < event.date_until:
+                    currentRowCount = self.ui.tableWidget_2.rowCount()
+                    self.ui.tableWidget_2.insertRow(currentRowCount)
+                    self.ui.tableWidget_2.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(event.id)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(event.date_since)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(event.date_until)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 3, QtWidgets.QTableWidgetItem(str(event.description)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 4, QtWidgets.QTableWidgetItem(str(event.status)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 5, QtWidgets.QTableWidgetItem(str(event.education_id_id)))
+                    type = session.execute(select(self.event_type_table).where(self.event_type_table.c.id==event.event_type_id_id)).first()
+                    self.ui.tableWidget_2.setItem(currentRowCount, 6, QtWidgets.QTableWidgetItem(str(type.title)))
+                if data == 3 and event.date_since > pytz.UTC.localize(datetime.now()):
+                    currentRowCount = self.ui.tableWidget_2.rowCount()
+                    self.ui.tableWidget_2.insertRow(currentRowCount)
+                    self.ui.tableWidget_2.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(event.id)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(event.date_since)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(event.date_until)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 3, QtWidgets.QTableWidgetItem(str(event.description)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 4, QtWidgets.QTableWidgetItem(str(event.status)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 5, QtWidgets.QTableWidgetItem(str(event.education_id_id)))
+                    type = session.execute(select(self.event_type_table).where(self.event_type_table.c.id==event.event_type_id_id)).first()
+                    self.ui.tableWidget_2.setItem(currentRowCount, 6, QtWidgets.QTableWidgetItem(str(type.title)))
+                if data == 0:
+                    currentRowCount = self.ui.tableWidget_2.rowCount()
+                    self.ui.tableWidget_2.insertRow(currentRowCount)
+                    self.ui.tableWidget_2.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(event.id)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(event.date_since)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(event.date_until)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 3, QtWidgets.QTableWidgetItem(str(event.description)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 4, QtWidgets.QTableWidgetItem(str(event.status)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 5, QtWidgets.QTableWidgetItem(str(event.education_id_id)))
+                    type = session.execute(select(self.event_type_table).where(self.event_type_table.c.id==event.event_type_id_id)).first()
+                    self.ui.tableWidget_2.setItem(currentRowCount, 6, QtWidgets.QTableWidgetItem(str(type.title)))
+                    
+                
+            
         
     def add_info(self):
         with Session() as session:
-            employee = session.execute(select(self.employee_table).where(self.employee_table.c.username==name)).all()
+            employee = session.execute(select(self.employee_table).where(self.employee_table.c.username==str(name))).all()
             for i in employee:
                 org = session.execute(select(self.organization_table).where(self.organization_table.c.id==i.organization_id)).all()
                 pos = session.execute(select(self.position_table).where(self.position_table.c.id==i.position_id_id)).all()
@@ -49,9 +123,72 @@ class SeeInfo(QtWidgets.QDialog):
                 self.ui.Password.setText(str(i.password))
                 self.ui.Username.setText(str(i.username))
                 self.ui.Work_phone.setText(str(i.work_phone))
+                
+                skips = session.execute(select(self.calendarskip_employees_table).where(self.calendarskip_employees_table.c.employee_id==i.id)).all()
+                for id in skips:
+                    currentRowCount = self.ui.tableWidget.rowCount()
+                    skip = session.execute(select(self.calendarskip_table).where(self.calendarskip_table.c.id==id.calendarskip_id)).first()
+                    self.ui.tableWidget.insertRow(currentRowCount)
+                    self.ui.tableWidget.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(skip.id)))
+                    self.ui.tableWidget.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(skip.date_since)))
+                    self.ui.tableWidget.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(skip.date_until)))
+
+                    
+                vacations = session.execute(select(self.calendarvacation_employees_table).where(self.calendarvacation_employees_table.c.employee_id==i.id)).all()
+                for id in vacations:
+                    currentRowCount = self.ui.tableWidget_3.rowCount()
+                    vacation = session.execute(select(self.calendarvacation_table).where(self.calendarvacation_table.c.id==id.calendarvacation_id)).first()
+                    self.ui.tableWidget_3.insertRow(currentRowCount)
+                    self.ui.tableWidget_3.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(vacation.id)))
+                    self.ui.tableWidget_3.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(vacation.date_since)))
+                    self.ui.tableWidget_3.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(vacation.date_until)))
+                
+                educations = session.execute(select(self.calendareducation_employees_table).where(self.calendareducation_employees_table.c.employee_id==i.id)).all()
+                for id in educations:
+                    currentRowCount = self.ui.tableWidget_2.rowCount()
+                    education = session.execute(select(self.calendareducation_table).where(self.calendareducation_table.c.id==id.calendareducation_id)).first()
+                    event = session.execute(select(self.event_table).where(self.event_table.c.id==education.event_id_id)).first()
+                    self.ui.tableWidget_2.insertRow(currentRowCount)
+                    self.ui.tableWidget_2.setItem(currentRowCount, 0, QtWidgets.QTableWidgetItem(str(event.id)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 1, QtWidgets.QTableWidgetItem(str(event.date_since)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 2, QtWidgets.QTableWidgetItem(str(event.date_until)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 3, QtWidgets.QTableWidgetItem(str(event.description)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 4, QtWidgets.QTableWidgetItem(str(event.status)))
+                    self.ui.tableWidget_2.setItem(currentRowCount, 5, QtWidgets.QTableWidgetItem(str(event.education_id_id)))
+                    type = session.execute(select(self.event_type_table).where(self.event_type_table.c.id==event.event_type_id_id)).first()
+                    self.ui.tableWidget_2.setItem(currentRowCount, 6, QtWidgets.QTableWidgetItem(str(type.title)))
+
+                    
+                    
+                
     
     def save(self):
-        pass
+        with Session() as session:
+            org_id = session.execute(select(self.organization_table).where(self.organization_table.c.title==self.ui.Organization.currentText())).all()[0]
+            pos_id = session.execute(select(self.position_table).where(self.position_table.c.title==self.ui.Position.currentText())).all()[0]
+            try:
+                cab_id = session.execute(select(self.cabinet_table).where(self.cabinet_table.c.title==self.ui.Cabinet.text())).all()[0]
+            except:
+                new_cab = self.cabinet_table.insert().values(title=self.ui.Cabinet.text())
+                session.execute(new_cab)
+                session.commit()
+                cab_id = session.execute(select(self.cabinet_table).where(self.cabinet_table.c.title==self.ui.Cabinet.text())).all()[0]
+            try:
+                engine.execute(update(self.employee_table).where(self.employee_table.c.username==name).values(first_name=str(self.ui.Full_name.text()).split()[1], last_name=str(self.ui.Full_name.text()).split()[0], patronymic=str(self.ui.Full_name.text()).split()[2],
+                                                            birthday=self.ui.Birthday.text(), personal_phone=self.ui.Mobile_phone.text(), cabinet_id_id=cab_id[0], email=self.ui.Mail.text(), position_id_id=pos_id[0],
+                                                            username=self.ui.Username.text(), password=self.ui.Password.text(), is_superuser=False, is_staff=False, is_active=True, date_joined=datetime.now(), organization_id=org_id[0],
+                                                            work_phone=self.ui.Work_phone.text()))
+                session.flush()
+                session.commit()
+                dlg = QtWidgets.QMessageBox(self)
+                dlg.setWindowTitle("Успешно")
+                dlg.setText("Пользователь успешно добавлен")
+                button = dlg.exec()
+            except:
+                dlg = QtWidgets.QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("При создании пользователя произошла ошибка")
+                button = dlg.exec()
             
 class AddUser(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -89,7 +226,7 @@ class AddUser(QtWidgets.QDialog):
                 session.commit()
                 cab_id = session.execute(select(self.cabinet_table).where(self.cabinet_table.c.title==self.ui.Cabinet.text())).all()[0]
             try:
-                new_employee = self.employee_table.insert().values(first_name=str(self.ui.Full_name.text()).split()[0], last_name=str(self.ui.Full_name.text()).split()[1], patronymic=str(self.ui.Full_name.text()).split()[2],
+                new_employee = self.employee_table.insert().values(first_name=str(self.ui.Full_name.text()).split()[1], last_name=str(self.ui.Full_name.text()).split()[0], patronymic=str(self.ui.Full_name.text()).split()[2],
                                                     birthday=self.ui.Birthday.text(), personal_phone=self.ui.Mobile_phone.text(), cabinet_id_id=cab_id[0], email=self.ui.Mail.text(), position_id_id=pos_id[0],
                                                     username=self.ui.Username.text(), password=self.ui.Password.text(), is_superuser=False, is_staff=False, is_active=True, date_joined=datetime.now(), organization_id=org_id[0],
                                                     work_phone=self.ui.Work_phone.text())
