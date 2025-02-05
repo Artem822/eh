@@ -1,11 +1,11 @@
 from PySide6 import QtWidgets
 import sys
-from MainWindow import Ui_MainWindow
+from UI_py.MainWindow import Ui_MainWindow
 from sqlalchemy import  MetaData, Table, select, update, delete
 from alchemy import Session, engine
-from AddUser import Ui_Dialog_add
+from UI_py.AddUser import Ui_Dialog_add
 from datetime import datetime
-from SeeInfo import Ui_Dialog_SeeInfo
+from UI_py.SeeInfo import Ui_Dialog_SeeInfo
 from sqlalchemy import asc
 import pytz
 

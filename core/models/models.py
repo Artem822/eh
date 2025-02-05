@@ -101,6 +101,8 @@ class Event(models.Model):
     responsible_workers = models.ManyToManyField("Employee", related_name="responsible_workers")
     event_type_id = models.ForeignKey("EventType", on_delete=models.CASCADE, related_name="event_type")
     education_id = models.ForeignKey("Education", on_delete=models.CASCADE, related_name="education")
+    main_employee= models.ForeignKey("Employee", on_delete=models.CASCADE)
+    people = models.ManyToManyField("Employee", blank=True, related_name="people")
 
 
 class Employee(AbstractUser):
@@ -116,11 +118,21 @@ class Employee(AbstractUser):
     more_info = models.TextField(max_length=255, null=True)
     birthday = models.DateField(null=True)
     personal_phone = models.CharField(max_length=20, null=True)
+    date_of_dismissal = models.DateField(null=True, blank=True)
     
     
     def __str__(self):
         return str(self.username)
 
+
+class News(models.Model):
+    title = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+    description = models.TextField(max_length=255, blank=True, null=True)
+    photo = models.ImageField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.title
 
 class DocumentCategory(models.Model):
     title = models.CharField(max_length=255)
