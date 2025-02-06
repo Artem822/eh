@@ -93,9 +93,6 @@
                 resultsDiv.innerText = '';
                 return;
             }
-            
-            // Здесь выполняется сам поиск по содержимому страницы или API
-            // В данном примере мы просто ищем по заголовкам h1-h6
             let matches = [];
             let elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
             elements.forEach(element => {
@@ -103,8 +100,7 @@
                     matches.push(element);
                 }
             });
-            // Обновляем результаты поиска
-            resultsDiv.innerHTML = ''; // Очищаем предыдущие результаты
+            resultsDiv.innerHTML = ''; 
             if (matches.length > 0) {
                 matches.forEach(match => {
                     let resultItem = document.createElement('p');
