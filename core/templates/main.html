@@ -11,14 +11,18 @@
 <body>
     <header style="background-color: rgb(225, 244, 200); display:flex; height:70px; align-items: center;" >
         <div class="container">
-            <input type="search" class="form-control" placeholder="Поиск">
+            <form class="d-flex" method="post">
+                {% csrf_token %}
+                 {{form.search}}
+                <button class="ms-3 btn btn-primary" type="submit">Найти</button>
+            </form>
         </div>
     </header>
 
     <div class="container">
         <div>
             <h2>Сотрудники</h2>
-            <div class="d-flex overflow-x-auto">
+            <div id="block-employee" class="d-flex overflow-x-auto">
                 {% for employee in employees %}
                     <div class="card mx-1 text-white p-2" style="background-color: rgb(120, 178, 75); min-width: 300px; min-height: 190px">
                         <h5>{{employee.username}}</h5>
@@ -39,41 +43,83 @@
                     pass
                 </div>
                     <h2>События</h2>
-                    <div class="d-flex flex-column overflow-y-auto" style="height: 50vh;">
+                    <div id="block-events" class="d-flex flex-column overflow-y-auto" style="height: 50vh;">
                         {% for event in events %}
                             <div class="px-3 pt-2 pb-5 mb-3 text-white position-relative" style="background-color: rgb(128,180,76);">
                                 <b>{{event.title}}</b><br>
                                 <span>{{event.description}}</span>
-                                <span class="position-absolute bottom-0 start-0 ms-3 mb-2"><small>{{event.date_since}}</small></span>
+                                <span class="position-absolute bottom-0 start-0 ms-3 mb-2 event_date"><small>{{event.date_since}}</small></span>
                                 <span class="position-absolute bottom-0 end-0 me-3 mb-2"><small>{{event.main_employee.username}}</small></span>
                             </div>
                         {% endfor %}
                 </div>
             </div>
             <div class="col">
-                <div class="row">
-                    <h2>Новости</h2>
-                        {% for new in news %}
-                            <div class="col-6 mb-4" >
-                                <div class="card-img-top" >
-                                    {%if new.photo %}
+                <h2>Новости</h2>
+                <div class="row" id="block-news">
+                {% for new in news %}
+                             <div class="col-6 mb-4" >
+                                 <div class="card-img-top" >
+                                     {%if new.photo %}
+                                        {% if new.photo.url %}
+                                         <img style='max-height:200px' class="card-img" src="{{new.photo.url}}" >
+                                        {% else %}
                                         <img style='max-height:200px' class="card-img" src="{{new.photo}}" >
-                                    {% else  %}
+                                        {% endif %}
+                                     {% else  %}
                                         <img style='max-height:200px' class="card-img" src="{% static 'img_fill/img.jpeg' %}" >
                                     {% endif %}
                                     
+                                 </div>
+                                 <div class="card-body text-white px-3 py-1" style="background-color: rgb(128,180,76);">
+                                     <h5 class="card-title">{{new.title}}</h5>
+                                     <p class="card-text">{{new.description}}</p>
+                                     <p class="card-text"><small>{{new.date}}</small></p>
                                 </div>
-                                <div class="card-body text-white px-3 py-1" style="background-color: rgb(128,180,76);">
-                                    <h5 class="card-title">{{new.title}}</h5>
-                                    <p class="card-text">{{new.description}}</p>
-                                    <p class="card-text"><small>{{new.date}}</small></p>
-                                </div>
-                            </div>
-                        {% endfor %}
+                             </div>
+                         {% endfor %}
                 </div>
             </div>
         </div>
-
     </div>
+    <script>
+        const inpSearch = document.getElementById('search');
+        const blockEmployee = document.getElementById('block-employee');
+        const blockEvents = document.getElementById('block-events');
+        const blockNews = document.getElementById('block-news');
+        
+        function performSearch(query) {
+            if (!query || query.trim().length === 0) {
+                resultsDiv.innerText = '';
+                return;
+            }
+            
+            // Здесь выполняется сам поиск по содержимому страницы или API
+            // В данном примере мы просто ищем по заголовкам h1-h6
+            let matches = [];
+            let elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            elements.forEach(element => {
+                if (element.textContent.toLowerCase().includes(query.toLowerCase())) {
+                    matches.push(element);
+                }
+            });
+            // Обновляем результаты поиска
+            resultsDiv.innerHTML = ''; // Очищаем предыдущие результаты
+            if (matches.length > 0) {
+                matches.forEach(match => {
+                    let resultItem = document.createElement('p');
+                    resultItem.textContent = match.textContent;
+                    resultsDiv.appendChild(resultItem);
+                });
+            } else {
+                resultsDiv.textContent = 'Ничего не найдено.';
+            }
+        }
+        inpSearch.addEventListener('input', function(event) {
+            childs = blockEmployee.childNodes
+            alert(childs.innerText)
+        });
+    </script>
+
 </body>
 </html>
