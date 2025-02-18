@@ -9,7 +9,7 @@ def main(page: ft.Page):
     main_content = ft.Column()
     page.padding = 0
     with Session() as session:
-        global news_title1, news_title2, news_title3,news_desc1,news_desc2,news_desc3,news_date1,news_date2,news_date3,event_title,event_desc,event_date,event_author
+        global news_title1, news_title2, news_title3,news_desc1,news_desc2,news_desc3,news_date1,news_date2,news_date3,event_title,event_desc,event_date,event_author,news_rep1,news_rep2,news_rep3
         news_title1 = ft.Text(value=session.query(News).where(News.id==news_index).first().title)
         news_title2 = ft.Text(session.query(News).where(News.id==news_index+1).first().title)
         news_title3 = ft.Text(session.query(News).where(News.id==news_index+2).first().title)
@@ -19,15 +19,52 @@ def main(page: ft.Page):
         news_date1 = ft.Text(session.query(News).where(News.id==news_index).first().date)
         news_date2 = ft.Text(session.query(News).where(News.id==news_index+1).first().date)
         news_date3 = ft.Text(session.query(News).where(News.id==news_index+2).first().date)
+        news_rep1 = ft.Text(session.query(News).where(News.id==news_index).first().rep)
+        news_rep2 = ft.Text(session.query(News).where(News.id==news_index+1).first().rep)
+        news_rep3 = ft.Text(session.query(News).where(News.id==news_index+2).first().rep)
+        
         event_employee_id = session.query(Events).where(Events.id==event_index).first().main_employee_id
         event_title = ft.Text(value=session.query(Events).where(Events.id==event_index).first().title, size=18)
         event_desc= ft.Text(value=session.query(Events).where(Events.id==event_index).first().description)
         event_date = ft.Text(value=  session.query(Events).where(News.id==event_index).first().date_since.date())
         event_author = ft.Text(session.query(Employees).where(Employees.id==event_employee_id).first().username, no_wrap=True)
     
-    def click(e):
-        # e.control.content.value
-        print(news_index)
+    def click1(e):
+        with Session() as session:
+            rep1 = session.query(News).where(News.id==news_index).first()
+            if e.control.content.value == '+':       
+                rep1.rep +=1 
+                news_rep1.value = rep1.rep
+            else:
+                rep1.rep -=1 
+                news_rep1.value = rep1.rep
+            page.update()
+            session.commit()
+    
+    def click2(e):
+        with Session() as session:
+            rep = session.query(News).where(News.id==news_index+1).first()
+            if e.control.content.value == '+':       
+                rep.rep +=1 
+                news_rep2.value = rep.rep
+            else:
+                rep.rep -=1 
+                news_rep2.value = rep.rep
+            page.update()
+            session.commit()
+    
+    def click3(e):
+        with Session() as session:
+            rep = session.query(News).where(News.id==news_index+2).first()
+            if e.control.content.value == '+':       
+                rep.rep +=1 
+                news_rep3.value = rep.rep
+            else:
+                rep.rep -=1 
+                news_rep3.value = rep.rep
+            page.update()
+            session.commit()
+        
  
     def down(e):
         with Session() as session:
@@ -37,15 +74,18 @@ def main(page: ft.Page):
                 news_title1.value = session.query(News).where(News.id==news_index).first().title
                 news_desc1.value = session.query(News).where(News.id==news_index).first().description
                 news_date1.value = session.query(News).where(News.id==news_index).first().date
+                news_rep1.value = session.query(News).where(News.id==news_index).first().rep
                 try:
                     news_title2.value = session.query(News).where(News.id==news_index+1).first().title
                     news_desc2.value = session.query(News).where(News.id==news_index+1).first().description
                     news_date2.value = session.query(News).where(News.id==news_index+1).first().date
+                    news_rep2.value = session.query(News).where(News.id==news_index+1).first().rep
                     news_2.visible = True
                     try:
                         news_title3.value = session.query(News).where(News.id==news_index+2).first().title
                         news_desc3.value = session.query(News).where(News.id==news_index+2).first().description
                         news_date3.value = session.query(News).where(News.id==news_index+2).first().date
+                        news_rep3.value = session.query(News).where(News.id==news_index+2).first().rep
                         news_3.visible = True
                     except:
                         news_3.visible=False
@@ -74,15 +114,18 @@ def main(page: ft.Page):
                 news_title1.value = session.query(News).where(News.id==news_index).first().title
                 news_desc1.value = session.query(News).where(News.id==news_index).first().description
                 news_date1.value = session.query(News).where(News.id==news_index).first().date
+                news_rep1.value = session.query(News).where(News.id==news_index).first().rep
                 try:
                     news_title2.value = session.query(News).where(News.id==news_index+1).first().title
                     news_desc2.value = session.query(News).where(News.id==news_index+1).first().description
                     news_date2.value = session.query(News).where(News.id==news_index+1).first().date
+                    news_rep2.value = session.query(News).where(News.id==news_index+1).first().rep
                     news_2.visible = True
                     try:
                         news_title3.value = session.query(News).where(News.id==news_index+2).first().title
                         news_desc3.value = session.query(News).where(News.id==news_index+2).first().description
                         news_date3.value = session.query(News).where(News.id==news_index+2).first().date
+                        news_rep3.value = session.query(News).where(News.id==news_index+2).first().rep        
                         news_3.visible = True
                     except:
                         news_3.visible=False
@@ -139,19 +182,23 @@ def main(page: ft.Page):
             event_author.value = session.query(Employees).where(Employees.id==event_employee_id).first().username
             page.update()
             
-    add_1 = ft.GestureDetector(content=ft.Text('+'), on_tap=click)
-    add_2 = ft.GestureDetector(content=ft.Text('+'), on_tap=click)
-    add_3 = ft.GestureDetector(content=ft.Text('+'), on_tap=click)
-    minus_1 = ft.GestureDetector(content=ft.Text('-'), on_tap=click)
-    minus_2 = ft.GestureDetector(content=ft.Text('-'), on_tap=click)
-    minus_3 =ft.GestureDetector(content=ft.Text('-'), on_tap=click)
+    add_1 = ft.GestureDetector(content=ft.Text('+'), on_tap=click1)
+    add_2 = ft.GestureDetector(content=ft.Text('+'), on_tap=click2)
+    add_3 = ft.GestureDetector(content=ft.Text('+'), on_tap=click3)
+    
+    minus_1 = ft.GestureDetector(content=ft.Text('-'), on_tap=click1)
+    minus_2 = ft.GestureDetector(content=ft.Text('-'), on_tap=click2)
+    minus_3 =ft.GestureDetector(content=ft.Text('-'), on_tap=click3)
+    
     up_arrow =ft.IconButton(icon=ft.icons.ARROW_UPWARD, visible=False, on_click=up)
     down_arrow = ft.IconButton(icon=ft.icons.ARROW_DOWNWARD, on_click=down)
     right_arrow =ft.IconButton(icon=ft.icons.ARROW_FORWARD, on_click=right)
     left_arrow = ft.IconButton(icon=ft.icons.ARROW_BACK, visible=False, on_click=left)
-    news_1 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title1, ft.Column([news_desc1], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_1, ft.Text('10'),minus_1])), news_date1]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True, border_radius=ft.border_radius.all(10))
-    news_2 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title2, ft.Column([news_desc2], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_2, ft.Text('10'),minus_2])), news_date2]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True,border_radius=ft.border_radius.all(10))
-    news_3 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title3, ft.Column([news_desc3], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_3, ft.Text('10'),minus_3])), news_date3]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True,border_radius=ft.border_radius.all(10))
+    
+    news_1 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title1, ft.Column([news_desc1], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_1, news_rep1,minus_1])), news_date1]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True, border_radius=ft.border_radius.all(10))
+    news_2 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title2, ft.Column([news_desc2], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_2, news_rep2,minus_2])), news_date2]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True,border_radius=ft.border_radius.all(10))
+    news_3 = ft.Container(ft.Row(controls=[ft.Image(src=f"e.jpg", height=50, width=50), ft.Column([news_title3, ft.Column([news_desc3], scroll=True,height=50,width=200, expand=False,), ft.Container(ft.Row([ft.Container(ft.Row([add_3, news_rep3,minus_3])), news_date3]))])]), bgcolor=ft.colors.GREEN, width=300, adaptive=True,border_radius=ft.border_radius.all(10))
+    
     event = ft.Container(ft.Row([left_arrow,ft.Container(ft.Column([event_title, event_desc, ft.Row([event_date, event_author],scroll=True, alignment=ft.MainAxisAlignment.SPACE_BETWEEN)], alignment=ft.MainAxisAlignment.CENTER),border_radius=ft.border_radius.all(10), bgcolor=ft.colors.GREEN, width=200, height=250), right_arrow], width=400))
 
 
@@ -169,6 +216,7 @@ def main(page: ft.Page):
    
     news_button =  ft.ElevatedButton("Новости", on_click=change_tab1, bgcolor=ft.colors.YELLOW)
     events_button = ft.ElevatedButton("События", on_click=change_tab2, bgcolor=ft.colors.YELLOW) 
+    
     tab_buttons = ft.Container(ft.Row(
         controls=[
             news_button,
